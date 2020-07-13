@@ -1,7 +1,8 @@
 from math import sqrt
+import numpy as np
 
 
-def GetMetricDistance(image_1, image_2, side, pixel_cnt):
+def get_metric_distance(image_1, image_2, side, pixel_cnt):
     rgb_image_1 = image_1.convert('RGB')
     rgb_image_2 = image_2.convert('RGB')
 
@@ -43,18 +44,56 @@ def GetMetricDistance(image_1, image_2, side, pixel_cnt):
 
 
 # U - 0, D - 1, L - 2, R - 3
-def CalcGenViability(current_gen, metric_info, blocks_cnt):
+def calc_gen_viability(current_gen, metric_info, blocks_cnt):
     viability = 0
+    # print(current_gen)
     for rows in range(blocks_cnt - 1):  # right sum  # -> #
         for columns in range(blocks_cnt):
-            first_cmp = current_gen[rows][columns]
-            second_cmp = current_gen[rows + 1][columns]
+            first_cmp = np.int(current_gen[rows][columns])
+            second_cmp = np.int(current_gen[rows + 1][columns])
             viability += metric_info[first_cmp][second_cmp][3]
 
     for rows in range(blocks_cnt):  # down sum
         for columns in range(blocks_cnt - 1):
-            first_cmp = current_gen[rows][columns]
-            second_cmp = current_gen[rows][columns + 1]
+            first_cmp = np.int(current_gen[rows][columns])
+            second_cmp = np.int(current_gen[rows][columns + 1])
             viability += metric_info[first_cmp][second_cmp][1]
 
     return viability
+
+
+def get_side_index(side):
+    if side == 'U':
+        return 0
+    if side == 'D':
+        return 1
+    if side == 'L':
+        return 2
+    if side == 'R':
+        return 3
+
+
+def get_reversed_side_index(side):
+    if side == 'U':
+        return 1
+    if side == 'D':
+        return 0
+    if side == 'L':
+        return 3
+    if side == 'R':
+        return 2
+
+
+def is_inside_box(x_cord, y_cord, block_cnt):
+    if x_cord < 0 or x_cord >= block_cnt or y_cord < 0 or y_cord >= block_cnt:
+        return False
+
+    return True
+
+
+def debug(metric):
+    for i in range(len(metric)):
+        for j in range(len(metric)):
+            for o in range(4):
+                print(metric[i][j][o], end=' ')
+            print()

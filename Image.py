@@ -1,6 +1,7 @@
-from PIL import Image
 import os
 import Metric
+
+from PIL import Image
 
 
 class PuzzlePicture:
@@ -15,9 +16,9 @@ class PuzzlePicture:
         self.path = path
 
         self.blocks_cnt = self.picture_size // self.block_size
-        self.blocks_path = 'image_parts/'
+        self.blocks_path = 'images_parts/'
 
-    def CutPicture(self):
+    def cut_picture(self):
         """
          Saving blocks in dir 'image_parts'
          TODO: may be making map, save info .. ! !
@@ -36,8 +37,7 @@ class PuzzlePicture:
                 part.save(self.blocks_path + str(counter) + '.png')
                 counter += 1
 
-
-    def BuildImage(self):
+    def build_image(self, matrix):
         """
         Build a new picture from sorted (previously) parts of the picture
         TODO: getting parts without extra dir
@@ -49,7 +49,8 @@ class PuzzlePicture:
 
         for y_cord in range(self.blocks_cnt):
             for x_cord in range(self.blocks_cnt):
-                current_block = Image.open(self.blocks_path + files[iterator])
+                """files[iterator] -> matrix[i][j]"""
+                current_block = Image.open(self.blocks_path + str(matrix[x_cord][y_cord]) + '.png')
                 new_image.paste(current_block, (x_cord * self.block_size, y_cord * self.block_size))
                 iterator += 1
 
@@ -57,12 +58,13 @@ class PuzzlePicture:
         new_image.show()
 
     # Getting RGB pictures info
-    def GetMetricMatchingInfo(self):
+    def get_metric_matching_info(self):
         """
         Getting R, G and B pixels data for any part of the puzzle
         """
         files = sorted(os.listdir(self.blocks_path), key=lambda string: int(string[0: string.find('.')]))
         distances = list()
+        cnt = 0
         for file in files:
             current_dist = list()
 
@@ -71,28 +73,27 @@ class PuzzlePicture:
                     img_file = Image.open(self.blocks_path + file)
                     img_another_file = Image.open(self.blocks_path + another_file)
 
-                    up = Metric.GetMetricDistance(img_file, img_another_file, 'U', self.block_size)
-                    down = Metric.GetMetricDistance(img_file, img_another_file, 'D', self.block_size)
-                    left = Metric.GetMetricDistance(img_file, img_another_file, 'L', self.block_size)
-                    right = Metric.GetMetricDistance(img_file, img_another_file, 'R', self.block_size)
+                    up = Metric.get_metric_distance(img_file, img_another_file, 'U', self.block_size)
+                    down = Metric.get_metric_distance(img_file, img_another_file, 'D', self.block_size)
+                    left = Metric.get_metric_distance(img_file, img_another_file, 'L', self.block_size)
+                    right = Metric.get_metric_distance(img_file, img_another_file, 'R', self.block_size)
 
                     current_dist.append([up, down, left, right])
                 else:
                     current_dist.append([-1, -1, -1, -1])
-
+            cnt += 1
+            print(str(cnt) + ' ' + str(current_dist))
             distances.append(current_dist)
 
         return distances
 
-
-
     # Debug image showing, may be no
-    def ShowImage(self):
+    def show_image(self):
         current_image = Image.open(self.path)
         current_image.show()
 
     # One more debug func
-    def Debug(self, num):
+    def debug(self, num):
         ok = False
         new_image = Image.new("RGB", (self.picture_size, self.picture_size))
         file = open('data_train/data_train_64_answers.txt', 'r')
@@ -104,7 +105,7 @@ class PuzzlePicture:
                 for png_id in new_ln:
                     lst.append(str(int(png_id)) + '.png')
 
-                print(lst)
+                #print(lst)
                 # blocks = sorted(os.listdir('image_parts/'), key=lambda string: int(string[0: string.find('.')]))
                 for y_cord in range(self.blocks_cnt):
                     for x_cord in range(self.blocks_cnt):
@@ -122,14 +123,3 @@ class PuzzlePicture:
 
 if __name__ == '__main__':
     img = PuzzlePicture(512, 64, 'data_train/64-sources/1200.png')
-    img.ShowImage()
-    img.CutPicture()
-    img.BuildImage()
-    #img.Debug(1200)
-
-    tt = img.GetMetricMatchingInfo()
-    n = 0
-    for i in tt:
-        print(str(n) + ': ')
-        print(i)
-        n += 1
